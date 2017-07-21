@@ -61,7 +61,7 @@ RUN wget \
     -O ${GERRIT_HOME}/gerrit-oauth-provider.jar
 
 #download bouncy castle
-ENV BOUNCY_CASTLE_VERSION 1.54
+ENV BOUNCY_CASTLE_VERSION 1.52
 ENV BOUNCY_CASTLE_URL http://central.maven.org/maven2/org/bouncycastle
 
 RUN wget \
