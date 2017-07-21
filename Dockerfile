@@ -6,9 +6,14 @@ MAINTAINER zsx <thinkernel@gmail.com>
 ENV GERRIT_HOME /var/gerrit
 ENV GERRIT_SITE ${GERRIT_HOME}/review_site
 ENV GERRIT_WAR ${GERRIT_HOME}/gerrit.war
-ENV GERRIT_VERSION 2.12.3
+ENV GERRIT_VERSION_MAJOR 2
+ENV GERRIT_VERSION_MINOR 13
+ENV GERRIT_VERSION_PATCH 6
+ENV GERRIT_VERSION_SHORT ${GERRIT_VERSION_MAJOR}.${GERRIT_VERSION_MINOR}
+ENV GERRIT_VERSION ${GERRIT_VERSION_SHORT}.${GERRIT_VERSION_PATCH}
 ENV GERRIT_USER gerrit2
 ENV GERRIT_INIT_ARGS ""
+ENV BOUNCY_CASTLE_VERSION 1.52
 
 # Add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN adduser -D -h "${GERRIT_HOME}" -g "Gerrit User" -s /sbin/nologin "${GERRIT_USER}"
@@ -34,14 +39,12 @@ RUN set -x \
 
 RUN mkdir /docker-entrypoint-init.d
 
-#Download gerrit.war TEMPORARY URL for fix with iframe
-#RUN wget https://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war -O $GERRIT_WAR
-RUN wget https://gerrit-ci.gerritforge.com/job/Gerrit-stable-2.13/20/artifact/buck-out/gen/gerrit.war -O $GERRIT_WAR
-#Only for local test
+RUN echo ${GERRIT_VERSION}; \ 
+    wget https://gerrit-releases.storage.googleapis.com/gerrit-${GERRIT_VERSION}.war -O $GERRIT_WAR
 #COPY gerrit-${GERRIT_VERSION}.war $GERRIT_WAR
 
 #Download Plugins
-ENV PLUGIN_VERSION=stable-2.12
+ENV PLUGIN_VERSION=stable-${GERRIT_VERSION_SHORT}
 ENV GERRITFORGE_URL=https://gerrit-ci.gerritforge.com
 ENV GERRITFORGE_ARTIFACT_DIR=lastSuccessfulBuild/artifact/buck-out/gen/plugins
 #delete-project
@@ -57,11 +60,10 @@ RUN wget \
 
 #oauth2 plugin
 RUN wget \
-    ${GERRITFORGE_URL}/job/plugin-gerrit-oauth-provider-gh-master/${GERRITFORGE_ARTIFACT_DIR}/gerrit-oauth-provider/gerrit-oauth-provider.jar \
-    -O ${GERRIT_HOME}/gerrit-oauth-provider.jar
+    ${GERRITFORGE_URL}/job/plugin-oauth-stable-${GERRIT_VERSION_SHORT}/${GERRITFORGE_ARTIFACT_DIR}/oauth/oauth.jar \
+    -O ${GERRIT_HOME}/oauth.jar
 
 #download bouncy castle
-ENV BOUNCY_CASTLE_VERSION 1.52
 ENV BOUNCY_CASTLE_URL http://central.maven.org/maven2/org/bouncycastle
 
 RUN wget \
